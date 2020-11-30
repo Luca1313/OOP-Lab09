@@ -6,7 +6,9 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.LayoutManager;
 import java.awt.Toolkit;
+import java.util.Arrays;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -14,6 +16,7 @@ import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
+
 
 /**
  * Modify this small program adding new filters.
@@ -35,7 +38,17 @@ public final class LambdaFilter extends JFrame {
     private static final long serialVersionUID = 1760990730218643730L;
 
     private enum Command {
-        IDENTITY("No modifications", Function.identity());
+        IDENTITY("No modifications", Function.identity()),
+        CONVERT_TO_LOWERCASE("Convert to lowercase", s -> s.toLowerCase()),
+        COUNT_CHARS("Count number of chars", s -> String.valueOf(s.length())),
+        COUNT_LINES("Count number of lines", s -> String.valueOf(s.lines().count())),
+        LIST_WORDS_MERGED("Merge words alphabetically", s -> Arrays.stream(s.split(" ")).sorted().
+                collect(Collectors.reducing((s1, s2) -> s1.concat(" " + s2))).get()),
+        WORDS_COUNT("Count each word", s -> Arrays.stream(s.split(" ")).
+                collect(Collectors.groupingBy(Function.identity(), Collectors.counting())).
+                entrySet().stream().filter(p -> !p.getKey().equals("\n") && !p.getKey().equals("")).
+                map(pair -> pair.getKey() + " -> " + pair.getValue()).
+                reduce("", (p1, p2) -> p1 + "\n" + p2));
 
         private final String commandName;
         private final Function<String, String> fun;
